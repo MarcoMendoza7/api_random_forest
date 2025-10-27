@@ -1,30 +1,47 @@
-from pathlib import Path
+# backend/project/settings.py
+
 import os
-
-# settings.py
-
-# Clave secreta para Django (modo desarrollo)
-SECRET_KEY = 'django-insecure-<a&j=o*@a9sssl0vu89a^&9--u^pw3sykyi+tt(8xrw-5(gv#j)>'
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Carpeta del frontend
-FRONTEND_DIR = BASE_DIR / 'frontend'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'tu_clave_secreta_por_defecto_para_local'
+)
 
-# Debug y hosts
-DEBUG = True
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-# Static files
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [FRONTEND_DIR]
+# Permitir cualquier host para Render, producción y localhost
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.onrender.com']
 
-# Templates
-TEMPLATES_DIR = FRONTEND_DIR
+# Resto de configuraciones...
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'api',  # tu app
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'project.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'api', 'templates')],  # <-- aquí buscamos index.html
+        'DIRS': [BASE_DIR / 'backend' / 'api' / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -37,28 +54,20 @@ TEMPLATES = [
     },
 ]
 
-INSTALLED_APPS = [
-    'django.contrib.admin',       # necesario para /admin/
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'api',                        # tu app de la API
-]
+WSGI_APPLICATION = 'project.wsgi.application'
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',      # <--- obligatorio
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',   # <--- obligatorio
-    'django.contrib.messages.middleware.MessageMiddleware',      # <--- obligatorio
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
+# Base de datos
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
+# Archivos estáticos para Render
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Rutas del proyecto
-ROOT_URLCONF = 'project.urls'
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# Media (si tu app sube imágenes)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
